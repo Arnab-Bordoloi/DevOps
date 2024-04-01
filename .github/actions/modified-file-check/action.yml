@@ -11,6 +11,10 @@ inputs:
   to:
     required: true
     description: "The git ref to compare to"
+outputs:
+  has_changes:
+    value: ${{ steps.check_modified_files.outputs.has_changes }}
+    description: "Whether or not at least one file matches the pattern"
 runs:
   using: composite
   steps:
@@ -34,7 +38,3 @@ runs:
           echo "Matching files have been modified: $MATCHES"
           echo "has_changes=true" >> "$GITHUB_OUTPUT"
         fi
-outputs:
-  has_changes:
-    value: ${{ steps.check_modified_files.outputs.has_changes }}
-    description: "Whether or not at least one file matches the pattern"
