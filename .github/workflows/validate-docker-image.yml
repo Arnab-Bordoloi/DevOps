@@ -25,16 +25,16 @@ jobs:
           pattern: (.*)${{ matrix.package }}/constants.env
           from: ${{ github.event.pull_request.base.sha }}
           to: ${{ github.event.pull_request.head.sha }}
-      - if: ${{ steps.check_modified_files.outputs.has_changes == 'true' }}
+      - if: ${{ steps.check_packages.outputs.has_changes == 'true' }}
         name: Login to GitHub Container Registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login -u "${{ github.actor }}" --password-stdin ghcr.io
-      - if: ${{ steps.check_modified_files.outputs.has_changes == 'true' }}
+      - if: ${{ steps.check_packages.outputs.has_changes == 'nothing' }}
         name: add a self signed certficate to the build context
         env:
           SHELL_PRIVATE_CRT: ${{ secrets.SHELL_PRIVATE_CRT }}
         working-directory: ${{ matrix.package }}
         run: echo "$SHELL_PRIVATE_CRT" > shell-private-type-1-root-ca.crt
-      - if: ${{ steps.check_modified_files.outputs.has_changes == 'true' }}
+      - if: ${{ steps.check_packages.outputs.has_changes == 'true' }}
         name: Build Docker Image
         working-directory: ${{ matrix.packages }}
         run: npm run docker:build
