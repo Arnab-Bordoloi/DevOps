@@ -22,7 +22,7 @@ jobs:
         id: check_packages
         name: Check for changes to ${{ matrix.package }}/constants.env
         with:
-          pattern: (.*){{ matrix.package }}/constants.env
+          pattern: (.*)${{ matrix.package }}/constants.env
           from: ${{ github.event.before }}
           to: ${{ github.sha }}
       - if: ${{ steps.check_modified_files.outputs.has_changes == 'true' }}
