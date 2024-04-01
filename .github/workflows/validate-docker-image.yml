@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./github/actions/modified-file-check
         id: check_packages
-        name: Check for changes to ${{ matrix.packages }}/constants.env
+        name: Check for changes to ${{ matrix.package }}/constants.env
         with:
           pattern: (.*){{ matrix.package }}/constants.env
           from: ${{ github.event.before }}
