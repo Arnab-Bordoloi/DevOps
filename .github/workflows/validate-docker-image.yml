@@ -5,7 +5,7 @@ on:
 
 jobs:
   build_and_publish:
-    name: Build and publish docker image
+    name: Validate docker image
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -18,7 +18,7 @@ jobs:
           - "packages/spring-boot-demo"
     steps:
       - uses: actions/checkout@v4
-      - uses: ./github/actions/modified-file-check
+      - uses: ./.github/actions/modified-file-check
         id: check_packages
         name: Check for changes to ${{ matrix.package }}/constants.env
         with:
