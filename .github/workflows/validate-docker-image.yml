@@ -23,8 +23,8 @@ jobs:
         name: Check for changes to ${{ matrix.package }}/constants.env
         with:
           pattern: (.*){{ matrix.package }}/constants.env
-          from: ${{ github.event.before }}
-          to: ${{ github.sha }}
+          from: ${{ github.event.pull_request.base.sha }}
+          to: ${{ github.event.pull_request.head.sha }}
       - if: ${{ steps.check_modified_files.outputs.has_changes == 'true' }}
         name: Login to GitHub Container Registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login -u "${{ github.actor }}" --password-stdin ghcr.io
