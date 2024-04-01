@@ -1,0 +1,40 @@
+---
+name: "Modified file check"
+description: "Given a grep pattern, checks for file changes between two git refs and outputs whether at least one match exit"
+inputs:
+  pattern:
+    required: true
+    description: "The grep pattern used to check against changed files"
+  from:
+    required: true
+    description: "The git ref to compare against"
+  to:
+    required: true
+    description: "The git ref to compare to"
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-dept: 0
+    - name: Check modified files'
+      id: check_modified_files
+      shell: bash
+      env:
+        PATTERN: ${{ inputs.pattern }}
+        FROM: ${{ inputs.from }}
+        TO: ${{ inputs.to }}
+      run: |
+        echo "Checking for modified files matchin patter '$PATTERN' between $FROM and $TO"
+        MATCHES=$(git diff --name-only -r $FROM...$TO | grep -E "$PATTERN" || echo "")
+        if [ -z "$MATCHES" ]; then
+          echo "No matching files were found"
+          echo "has_changes=false" >> "$GITHUB_OUTPUT"
+        else
+          echo "Matching files have been modified: $MATCHES"
+          echo "has_changes=true" >> "$GITHUB_OUTPUT"
+        fi
+outputs:
+  has_changes:
+    value: ${{ steps.check_modified_files.outputs.has_changes }}
+    description: "Whether or not at least one file matches the pattern"
