@@ -11,6 +11,10 @@ inputs:
   to:
     required: true
     description: "The git ref to compare to"
+outputs:
+  has_changes:
+    value: ${{ steps.check_modified_files.outputs.has_changes }}
+    description: "Whether or not at least one file matches the pattern"
 runs:
   using: composite
   steps:
@@ -25,7 +29,7 @@ runs:
         FROM: ${{ inputs.from }}
         TO: ${{ inputs.to }}
       run: |
-        echo "Checking for modified files matchin patter '$PATTERN' between $FROM and $TO"
+        echo "Checking for modified files matching pattern '$PATTERN' between $FROM and $TO"
         MATCHES=$(git diff --name-only -r $FROM...$TO | grep -E "$PATTERN" || echo "")
         if [ -z "$MATCHES" ]; then
           echo "No matching files were found"
@@ -34,7 +38,3 @@ runs:
           echo "Matching files have been modified: $MATCHES"
           echo "has_changes=true" >> "$GITHUB_OUTPUT"
         fi
-outputs:
-  has_changes:
-    value: ${{ steps.check_modified_files.outputs.has_changes }}
-    description: "Whether or not at least one file matches the pattern"
