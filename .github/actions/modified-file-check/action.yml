@@ -1,40 +1,48 @@
 ---
 name: "Modified file check"
-description: "Given a grep pattern, checks for file changes between two git refs and outputs whether at least one match exit"
+description: "Given a grep pattern, checks for file changes between two git refs and outputs whether at least one match exists"
 inputs:
-  pattern:
-    required: true
+  pattern: # this variable gets passed from the workflow
     description: "The grep pattern used to check against changed files"
-  from:
     required: true
+  from: # this variable gets passed from the workflow
     description: "The git ref to compare against"
-  to:
     required: true
+  to: # this variable gets passed from the workflow
     description: "The git ref to compare to"
+    required: true
+outputs: # this variable gets passed from the workflow
+  has_changes:
+    description: "Whether or not at least one file matches the pattern"
+    value: ${{ steps.check_modified_files.outputs.has_changes }}
+
+# execution begins from here
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v4 # when you checkout, you get all clis at your disposal to apply in the flow
       with:
-        fetch-dept: 0
-    - name: Check modified files'
-      id: check_modified_files
-      shell: bash
+        fetch-depth: 0 # this is a variable used in the actions
+    - name: Check modified files
+      id: check_modified_files # we give an id so that we can refer it later. Its like index
+      shell: bash # we are using linux shell bash
+      # these are environment variable defined so that they can be used in the flow whenever needed
       env:
-        PATTERN: ${{ inputs.pattern }}
-        FROM: ${{ inputs.from }}
-        TO: ${{ inputs.to }}
+        PATTERN: ${{ inputs.pattern }} # this value comes from workflow & is the pattern to look for in grep
+        FROM: ${{ inputs.from }} # this value comes from workflow & is commit sha
+        TO: ${{ inputs.to }} # this value comes from workflow & is commit sha
       run: |
-        echo "Checking for modified files matchin patter '$PATTERN' between $FROM and $TO"
+        echo "Checking for modified files matching pattern '$PATTERN' between $FROM and $TO"
+
         MATCHES=$(git diff --name-only -r $FROM...$TO | grep -E "$PATTERN" || echo "")
+
         if [ -z "$MATCHES" ]; then
-          echo "No matching files were found"
+          echo "No matching files were found."
           echo "has_changes=false" >> "$GITHUB_OUTPUT"
         else
           echo "Matching files have been modified: $MATCHES"
           echo "has_changes=true" >> "$GITHUB_OUTPUT"
         fi
-outputs:
-  has_changes:
-    value: ${{ steps.check_modified_files.outputs.has_changes }}
-    description: "Whether or not at least one file matches the pattern"
+
+  # above - -E special characters retain its characteristics. MATCHES has the name of the file
+  # echo "has_changes=true" >> "$GITHUB_OUTPUT" - this sends the variable and its value to the github output.
