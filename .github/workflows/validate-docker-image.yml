@@ -1,0 +1,40 @@
+name: "Build: Docker image"
+
+on:
+  - pull_request
+
+jobs:
+  build_and_publish:
+    name: Build and publish docker image
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    env:
+      NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    strategy:
+      matrix:
+        package:
+          - "packages/spring-boot-demo"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./github/actions/modified-file-check
+        id: check_packages
+        name: Check for changes to ${{ matrix.packages }}/constants.env
+        with:
+          pattern: (.*){{ matrix.package }}/constants.env
+          from: ${{ github.event.before }}
+          to: ${{ github.sha }}
+      - if: ${{ steps.check_modified_files.outputs.has_changes == 'true' }}
+        name: Login to GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login -u "${{ github.actor }}" --password-stdin ghcr.io
+      - if: ${{ steps.check_modified_files.outputs.has_changes == 'true' }}
+        name: add a self signed certficate to the build context
+        env:
+          SHELL_PRIVATE_CRT: ${{ secrets.SHELL_PRIVATE_CRT }}
+        working-directory: ${{ matrix.package }}
+        run: echo "$SHELL_PRIVATE_CRT" > shell-private-type-1-root-ca.crt
+      - if: ${{ steps.check_modified_files.outputs.has_changes == 'true' }}
+        name: Build Docker Image
+        working-directory: ${{ matrix.packages }}
+        run: npm run docker:build
